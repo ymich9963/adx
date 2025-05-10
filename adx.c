@@ -302,6 +302,7 @@ int output_help()
             "\n\t-o,\t--output <file>\t= Path or name of the output file."
             "\n\t\t--info\t\t= Output to stdout some info about the input file."
             "\n\t\t--mono\t\t= Convert the data to single channel data."
+            "\n\t-f,\t--output-format <file>= Choose between 'csv-vertical', 'csv-horizontal', and 'stdout'."
           );
 
     return 0;
