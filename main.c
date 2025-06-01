@@ -1,9 +1,10 @@
 #include "adx.h"
 
+// TODO: Use the type-sepcific read functions so that the data gets converted between encodings instead of the raw read function
 // TODO: Have a decrypt option if the data in the audio file are encrypted
-// TODO: Have the naming scheme from the mix2mono project
 // TODO: Finish the implementation where there would be file data as the audio file data.
-// TODO: Check out the SFC_GET_FORMAT_SUBTYPE and SFC_GET_FORMAT_MAJOR code examples, might need to change mix2mono as well...
+// TODO: Should I keep the --mono option or direct the user to mix2mono
+
 // INFO: Data gets casted when the encoding doesn't match the read function
 
 int main (int argc, char** argv) {
@@ -33,11 +34,13 @@ int main (int argc, char** argv) {
     adx_conf.set_adx(&adx_conf, &sf_info);
 
     /* Read the file data using the specifed settings */
-    CHECK_ERR(read_file_data_raw(&adx_conf, file, &sf_info, &x));
+    CHECK_ERR(adx_conf.read(&adx_conf, file, &sf_info, &x));
     printf("Read file data succesfully.\n");
 
     /* Do some processing */
     adx_conf.proc(&adx_conf, &sf_info, x, &x_proc);
+
+    generate_file_name(adx_conf.ofile, adx_conf.ifile);
 
     /* Write to file */ 
     CHECK_ERR(adx_conf.write(&adx_conf, &sf_info, x_proc));

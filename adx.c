@@ -2,7 +2,7 @@
 
 void set_defaults(adx_config_t* adx_conf)
 {
-    strcpy(adx_conf->ofile, "adx.txt");
+    memset(adx_conf->ofile, '\0', MAX_STR);
     adx_conf->info_flag = 0;
     adx_conf->precision = 5;
     adx_conf->set_adx = &set_adx_auto;
@@ -92,6 +92,39 @@ int get_options(int* restrict argc, char** restrict argv, adx_config_t* restrict
     return 0;
 }
 
+char* get_datetime_string()
+{
+    time_t time_since_epoch = time(NULL);
+    struct tm* tm = localtime(&time_since_epoch);
+    static char s[13];
+    strftime(s, sizeof(s), "%d%m%y%H%M%S", tm);
+
+    return s;
+}
+
+void generate_file_name(char* ofile, char* ifile)
+{
+    if (ofile[0] != '\0' ) {
+
+        return;
+    }
+
+    char ifile_no_extension[MIN_STR];
+
+    /* Remove the extension in the input file name */
+    strncpy(ifile_no_extension, ifile, strlen(ifile) - 4);
+
+    /* Fix an issue when the copied string is not terminated correctly */
+    ifile_no_extension[strlen(ifile) - 4] = '\0';
+
+    /* Remove the path specifier */
+    if (ifile_no_extension[0] == '.' && ifile_no_extension[1] == '\\') {
+        memmove(ifile_no_extension, ifile_no_extension + 2, MIN_STR - 2);
+    }
+
+    sprintf(ofile, "adx-%s-%s.txt", ifile_no_extension, get_datetime_string()); 
+}
+
 int open_file(SNDFILE** file, SF_INFO* sf_info, adx_config_t* adx_conf)
 {
     *file = sf_open(adx_conf->ifile, SFM_READ, sf_info);
@@ -137,10 +170,62 @@ int select_adx_settings(adx_config_t* adx_conf, char* strval)
 
 int read_file_data_raw(adx_config_t* adx_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x)
 {
+    *x = malloc(adx_conf->file_size * adx_conf->data_size);
+    sf_count_t sf_count = sf_read_raw(sndfile, *x, adx_conf->file_size * adx_conf->data_size);
+    if (sf_count != adx_conf->file_size * adx_conf->data_size) {
+        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n", sf_count, adx_conf->file_size * adx_conf->data_size);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+int read_file_data_short(adx_config_t* adx_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x)
+{
     *x = calloc(adx_conf->file_size, adx_conf->data_size);
-    sf_count_t sf_count = sf_read_raw(sndfile, *x, sf_info->frames);
+    sf_count_t sf_count = sf_readf_short(sndfile, *x, sf_info->frames);
     if (sf_count != sf_info->frames) {
-        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n", sf_count, sf_info->frames);
+        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n\n", sf_count, sf_info->frames);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+int read_file_data_int(adx_config_t* adx_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x)
+{
+    *x = calloc(adx_conf->file_size, adx_conf->data_size);
+    sf_count_t sf_count = sf_readf_int(sndfile, *x, sf_info->frames);
+    if (sf_count != sf_info->frames) {
+        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n\n", sf_count, sf_info->frames);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+int read_file_data_float(adx_config_t* adx_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x)
+{
+    *x = calloc(adx_conf->file_size, adx_conf->data_size);
+    sf_count_t sf_count = sf_readf_float(sndfile, *x, sf_info->frames);
+    if (sf_count != sf_info->frames) {
+        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n\n", sf_count, sf_info->frames);
+
+        return 1;
+    }
+
+    return 0;
+}
+
+int read_file_data_double(adx_config_t* adx_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x)
+{
+    *x = calloc(adx_conf->file_size, adx_conf->data_size);
+    sf_count_t sf_count = sf_readf_double(sndfile, *x, sf_info->frames);
+    if (sf_count != sf_info->frames) {
+        fprintf(stderr, "\nRead count not equal to requested frames, %lld != %lld.\n\n", sf_count, sf_info->frames);
 
         return 1;
     }
@@ -153,6 +238,7 @@ void set_adx_uint8(adx_config_t* adx_conf, SF_INFO* sf_info)
     adx_conf->file_size = sf_info->frames * sf_info->channels;
     adx_conf->data_size = sizeof(uint8_t);
     strcpy(adx_conf->format_specifier, "%hhu");
+    adx_conf->read = &read_file_data_raw;
     adx_conf->print = &printf_uint8;
     adx_conf->mix2mono = &mix2mono_uint8;
     fprintf(stdout,  "Set ADX settings for type 'uint8'.\n");
@@ -163,6 +249,7 @@ void set_adx_int8(adx_config_t* adx_conf, SF_INFO* sf_info)
     adx_conf->file_size = sf_info->frames * sf_info->channels;
     adx_conf->data_size = sizeof(int8_t);
     strcpy(adx_conf->format_specifier, "%hh");
+    adx_conf->read = &read_file_data_raw;
     adx_conf->print = &printf_int8;
     adx_conf->mix2mono = &mix2mono_int8;
     fprintf(stdout,  "Set ADX settings for type 'int8'.\n");
@@ -173,6 +260,7 @@ void set_adx_short(adx_config_t* adx_conf, SF_INFO* sf_info)
     adx_conf->file_size = sf_info->frames * sf_info->channels;
     adx_conf->data_size = sizeof(short);
     strcpy(adx_conf->format_specifier, "%hd");
+    adx_conf->read = &read_file_data_short;
     adx_conf->print = &printf_short;
     adx_conf->mix2mono = &mix2mono_short;
     fprintf(stdout,  "Set ADX settings for type 'short'.\n");
@@ -183,6 +271,7 @@ void set_adx_int(adx_config_t* adx_conf, SF_INFO* sf_info)
     adx_conf->file_size = sf_info->frames * sf_info->channels;
     adx_conf->data_size = sizeof(int);
     strcpy(adx_conf->format_specifier, "%d");
+    adx_conf->read = &read_file_data_int;
     adx_conf->print = &printf_int;
     adx_conf->mix2mono = &mix2mono_int;
     fprintf(stdout,  "Set ADX settings for type 'int'.\n");
@@ -193,6 +282,7 @@ void set_adx_float(adx_config_t* adx_conf, SF_INFO* sf_info)
     adx_conf->file_size = sf_info->frames * sf_info->channels;
     adx_conf->data_size = sizeof(float);
     set_precision_format(adx_conf->format_specifier, adx_conf->precision);
+    adx_conf->read = &read_file_data_float;
     adx_conf->print = &printf_float;
     adx_conf->mix2mono = &mix2mono_float;
     fprintf(stdout,  "Set ADX settings for type 'float'.\n");
@@ -204,6 +294,7 @@ void set_adx_double(adx_config_t* adx_conf, SF_INFO* sf_info)
     adx_conf->file_size = sf_info->frames * sf_info->channels;
     adx_conf->data_size = sizeof(double);
     set_precision_format(adx_conf->format_specifier, adx_conf->precision);
+    adx_conf->read = &read_file_data_double;
     adx_conf->print = &printf_double;
     adx_conf->mix2mono = &mix2mono_double;
     fprintf(stdout,  "Set ADX settings for type 'double'.\n");
@@ -238,7 +329,7 @@ void set_adx_auto(adx_config_t* adx_conf, SF_INFO* sf_info)
             set_adx_double(adx_conf, sf_info);
             break;
         default:
-            fprintf(stderr, "Auto-format detection for the detected format is not implemented. Resorting to reading as double.\n");
+            fprintf(stderr, "\nAuto-format detection for the detected format is not implemented. Resorting to reading as double.\n");
             set_adx_double(adx_conf, sf_info);
             break;
     }
@@ -384,25 +475,25 @@ void mix2mono_double(size_t size, int channels, void* x, void** x_mono)
     }
 }
 
-int select_output_format(adx_config_t* adx_conf, char* str)
+int select_output_format(adx_config_t* adx_conf, char* strval)
 {
     adx_conf->write = NULL;
 
-    if (!(strcmp("csv-horizontal", str))) {
+    if (!(strcmp("csv-horizontal", strval))) {
         adx_conf->write = &write_file_csv_horizontal;
     }
-    if (!(strcmp("csv-vertical", str))) {
+    if (!(strcmp("csv-vertical", strval))) {
         adx_conf->write = &write_file_csv_vertical;
     }
-    if (!(strcmp("stdout", str))) {
+    if (!(strcmp("stdout", strval))) {
         adx_conf->write = &write_stdout;
     }
-    if (!(strcmp("hex-dump", str))) {
+    if (!(strcmp("hex-dump", strval))) {
         adx_conf->write = &write_file_hex_dump;
     }
 
     if (!(adx_conf->write)) {
-        fprintf(stderr, "\nOutput format '%s' doesn't exist.\n", str);
+        fprintf(stderr, "\nOutput format '%s' doesn't exist.\n", strval);
 
         return 1;
     }
