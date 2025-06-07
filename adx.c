@@ -12,7 +12,6 @@ void set_defaults(adx_config_t* restrict adx_conf)
 
 int get_options(int argc, char** restrict argv, adx_config_t* restrict adx_conf)
 {
-    char strval[MAX_STR];
     uint8_t u8val = 0;
 
     if (argc == 1) {
@@ -38,20 +37,20 @@ int get_options(int argc, char** restrict argv, adx_config_t* restrict adx_conf)
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] != '-' && argv[i - 1][0] != '-') {
             CHECK_STR_LEN(argv[i]);
-            strcpy(adx_conf->ifile, strval);
+            strcpy(adx_conf->ifile, argv[i]);
             continue;
         }
 
         if (!(strcmp("-i", argv[i])) || !(strcmp("--input", argv[i]))) {
             CHECK_STR_LEN(argv[i + 1]);
-            strcpy(adx_conf->ifile, strval);
+            strcpy(adx_conf->ifile, argv[i + 1]);
             i++;
             continue;
         }
 
         if (!(strcmp("-o", argv[i])) || !(strcmp("--output", argv[i]))) {
             CHECK_STR_LEN(argv[i + 1]);
-            strcpy(adx_conf->ofile, strval);
+            strcpy(adx_conf->ofile, argv[i + 1]);
             i++;
             continue;
         }
