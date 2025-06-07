@@ -1,5 +1,6 @@
 # Audio file Data Extraction tool (ADX)
 ![badge](https://badgen.net/badge/Coverage/100/blue) ![coverity](https://scan.coverity.com/projects/31872/badge.svg)
+
 To extract the data from your audio file.
 
 ## Features
