@@ -83,7 +83,7 @@ void test_get_options() {
     TEST_ASSERT_EQUAL_INT(1, get_options(argc, argv, &adx_conf));
     reset(argv, &adx_conf, argc);
 
-    char cmd4[] = "first test.wav --input test.wav --output otest.wav --info --mono --read-format raw --precision 5 --output-format csv";
+    char cmd4[] = "first test.wav --input test.wav --output otest.wav --info --mono --encoding raw --precision 5 --output-format csv";
     split(cmd4, argv, &argc);
     TEST_ASSERT_EQUAL_INT(0, get_options(argc, argv, &adx_conf));
     reset(argv, &adx_conf, argc);
