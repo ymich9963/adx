@@ -1,11 +1,10 @@
 #include "adx.h"
 
-// TODO: Use the type-sepcific read functions so that the data gets converted between encodings instead of the raw read function
 // TODO: Have a decrypt option if the data in the audio file are encrypted
-// TODO: Finish the implementation where there would be file data as the audio file data.
-// TODO: Should I keep the --mono option or direct the user to mix2mono
+// TODO: Use more size specific types? libsndfile doesn't do that so maybe re-think. 
 
-// INFO: Data gets casted when the encoding doesn't match the read function
+// INFO: Only auto-converts data between short,int,float, and double, which is a libsndfile feature.
+// FIX: Swavgen default representation should be signed. Seems ADX detects signed and unsigned 8bit PCM the same way? Check swavgen output.
 
 int main (int argc, char** argv) {
     SF_INFO sf_info;        // File info
@@ -21,7 +20,7 @@ int main (int argc, char** argv) {
     set_defaults(&adx_conf);
 
     /* Get the options from the CLI */
-    CHECK_ERR(get_options(&argc, argv, &adx_conf));
+    CHECK_ERR(get_options(argc, argv, &adx_conf));
 
     /* Initialise input audio file buffer and open file */
     file = NULL;
@@ -43,7 +42,7 @@ int main (int argc, char** argv) {
     generate_file_name(adx_conf.ofile, adx_conf.ifile);
 
     /* Write to file */ 
-    CHECK_ERR(adx_conf.write(&adx_conf, &sf_info, x_proc));
+    CHECK_ERR(adx_conf.write(&adx_conf, x_proc));
     printf("Outputted data to '%s'!\n", adx_conf.ofile);
 
     sf_close(file);
