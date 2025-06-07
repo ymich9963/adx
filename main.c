@@ -2,9 +2,10 @@
 
 // TODO: Have a decrypt option if the data in the audio file are encrypted
 // TODO: Use more size specific types? libsndfile doesn't do that so maybe re-think. 
+// TODO: Add 24-bit PCM data extraction. 
 
 // INFO: Only auto-converts data between short,int,float, and double, which is a libsndfile feature.
-// FIX: Swavgen default representation should be signed. Seems ADX detects signed and unsigned 8bit PCM the same way? Check swavgen output.
+// INFO: Seems to auto-detect 8-bit PCM as unsigned by default. Need to specify with -e for signed 8-bit PCM audio files.
 
 int main (int argc, char** argv) {
     SF_INFO sf_info;        // File info

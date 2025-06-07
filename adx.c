@@ -250,7 +250,7 @@ void set_adx_int8(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info)
 {
     adx_conf->input_file_size = sf_info->frames * sf_info->channels;
     adx_conf->data_size = sizeof(int8_t);
-    strcpy(adx_conf->format_specifier, "%hh");
+    strcpy(adx_conf->format_specifier, "%hhd");
     adx_conf->read = &read_file_data_raw;
     adx_conf->print = &printf_int8;
     adx_conf->mix2mono = &mix2mono_int8;
