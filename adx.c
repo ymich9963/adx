@@ -61,7 +61,7 @@ int get_options(int argc, char** restrict argv, adx_config_t* restrict adx_conf)
             continue;
         }
 
-        if (!(strcmp("-r", argv[i])) || !(strcmp("--read-format", argv[i]))) {
+        if (!(strcmp("-e", argv[i])) || !(strcmp("--encoding", argv[i]))) {
             CHECK_RET(select_adx_settings(adx_conf, argv[i + 1]));
             i++;
             continue;
@@ -623,7 +623,7 @@ int output_help()
             "\n\t\t--mono\t\t= Convert the data to single channel data."
             "\n\t-f,\t--output-format <format>= Choose between 'column', 'csv', 'stdout', 'stdout-csv', and 'hex-dump'."
             "\n\t-p,\t--precision <number>\t= Enter a decimal number for the precision in the double/float outputs. Default is 5."
-            "\n\t-r,\t--read-format <format>\t= Force reading in a specific format. Choose between 'raw', 'uint8', 'int8', 'short', 'integer', 'float', and 'double'."
+            "\n\t-e,\t--encoding <encoding>\t= Force reading in a specific encoding. Choose between 'raw', 'uint8', 'int8', 'short', 'integer', 'float', and 'double'."
             "\n"
           );
 

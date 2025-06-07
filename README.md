@@ -1,6 +1,12 @@
 # Audio file Data Extraction tool (ADX)
 To extract the data from your audio file.
 
+## Features
+- Auto-detects the input file encoding and outputs that data to a text file.
+- Can specify the encoding to use for extraction which converts between short, integer, float, and double types (not available for unsigned/signed 8-bit integers).
+- Convert the audio file to a single-channel file and then extract the data from it.
+- Specify the precision of the extracted data when using decimal data types.
+
 ## Installing
 Currently an automatic installation exists only for Windows, and binaries are built only for Windows. For other Operating Systems you need to build from source.
 
@@ -34,7 +40,7 @@ Basic usage, `adx <audio file>`.
                 --mono          = Convert the data to single channel data.
         -f,     --output-format <format>= Choose between 'column', 'csv', 'stdout', 'stdout-csv', and 'hex-dump'.
         -p,     --precision <number>    = Enter a decimal number for the precision in the double/float outputs. Default is 5.
-        -r,     --read-format <format>  = Force reading in a specific format. Choose between 'raw', 'uint8', 'int8', 'short', 'integer', 'float', and 'double'.
+        -e,     --encoding <encoding>   = Force reading in a specific format. Choose between 'raw', 'uint8', 'int8', 'short', 'integer', 'float', and 'double'.
 ```
  
 ## Building
