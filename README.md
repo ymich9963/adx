@@ -39,11 +39,12 @@ Basic usage, `adx <audio file>`.
         -i,     --input <file>  = Path or name of the input file.
         -o,     --output <file> = Path or name of the output file.
                 --info          = Output to stdout some info about the input file.
-                --mono          = Convert the data to single channel data.
         -f,     --output-format <format>= Choose between 'column', 'csv', 'stdout', 'stdout-csv', and 'hex-dump'.
         -p,     --precision <number>    = Enter a decimal number for the precision in the double/float outputs. Default is 5.
         -e,     --encoding <encoding>   = Force reading in a specific format. Choose between 'raw', 'uint8', 'int8', 'short', 'integer', 'float', and 'double'.
 ```
+
+You may need to convert your multi-channel audio file into a single-channel (mono) audio file. If so check out [`mix2mono`](https://github.com/ymich9963/mix2mono).
  
 ## Building
 Only dependency is [libsndfile](https://github.com/libsndfile/libsndfile). Clone the repository and go to this directory. Using `make` simply run in a command line,

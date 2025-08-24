@@ -55,11 +55,6 @@ int get_options(int argc, char** restrict argv, adx_config_t* restrict adx_conf)
             continue;
         }
 
-        if (!(strcmp("-m", argv[i])) || !(strcmp("--mono", argv[i]))) {
-            adx_conf->proc = &proc_mono;
-            continue;
-        }
-
         if (!(strcmp("-e", argv[i])) || !(strcmp("--encoding", argv[i]))) {
             CHECK_RET(select_adx_settings(adx_conf, argv[i + 1]));
             i++;
@@ -242,7 +237,6 @@ void set_adx_uint8(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info)
     strcpy(adx_conf->format_specifier, "%hhu");
     adx_conf->read = &read_file_data_raw;
     adx_conf->print = &printf_uint8;
-    adx_conf->mix2mono = &mix2mono_uint8;
     fprintf(stdout,  "Set ADX settings for type 'uint8'.\n");
 }
 
@@ -253,7 +247,6 @@ void set_adx_int8(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info)
     strcpy(adx_conf->format_specifier, "%hhd");
     adx_conf->read = &read_file_data_raw;
     adx_conf->print = &printf_int8;
-    adx_conf->mix2mono = &mix2mono_int8;
     fprintf(stdout,  "Set ADX settings for type 'int8'.\n");
 }
 
@@ -264,7 +257,6 @@ void set_adx_short(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info)
     strcpy(adx_conf->format_specifier, "%hd");
     adx_conf->read = &read_file_data_short;
     adx_conf->print = &printf_short;
-    adx_conf->mix2mono = &mix2mono_short;
     fprintf(stdout,  "Set ADX settings for type 'short'.\n");
 }
 
@@ -275,7 +267,6 @@ void set_adx_int(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info)
     strcpy(adx_conf->format_specifier, "%d");
     adx_conf->read = &read_file_data_int;
     adx_conf->print = &printf_int;
-    adx_conf->mix2mono = &mix2mono_int;
     fprintf(stdout,  "Set ADX settings for type 'int'.\n");
 }
 
@@ -286,7 +277,6 @@ void set_adx_float(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info)
     set_precision_format(adx_conf->format_specifier, adx_conf->precision);
     adx_conf->read = &read_file_data_float;
     adx_conf->print = &printf_float;
-    adx_conf->mix2mono = &mix2mono_float;
     fprintf(stdout,  "Set ADX settings for type 'float'.\n");
 
 }
@@ -298,7 +288,6 @@ void set_adx_double(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info)
     set_precision_format(adx_conf->format_specifier, adx_conf->precision);
     adx_conf->read = &read_file_data_double;
     adx_conf->print = &printf_double;
-    adx_conf->mix2mono = &mix2mono_double;
     fprintf(stdout,  "Set ADX settings for type 'double'.\n");
 }
 
@@ -401,80 +390,12 @@ int output_input_file_info(SF_INFO* restrict sf_info, adx_config_t* restrict adx
     return 0;
 }
 
-void proc_mono(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info, void* restrict x, void** restrict x_proc)
-{
-    /* Convert file data to mono */
-    adx_conf->input_file_size /= sf_info->channels;
-    adx_conf->mix2mono(adx_conf->input_file_size, sf_info->channels, x, x_proc);
-    printf("Mixed file to mono.\n");
-}
-
 void proc_cpy(adx_config_t* restrict adx_conf, SF_INFO* restrict sf_info, void* restrict x, void** restrict x_proc)
 {
     /* Preserve the original data size */
     *x_proc = malloc(adx_conf->input_file_size * adx_conf->data_size);
     memcpy(*x_proc, x, adx_conf->input_file_size * adx_conf->data_size);
     printf("Preserved channel amount.\n");
-}
-
-void mix2mono_uint8(size_t size, int channels, void* restrict x, void** restrict x_mono)
-{
-    *x_mono = calloc(size, sizeof(uint8_t));
-    for (uint64_t i = 0; i < size; i++) {
-        for (uint16_t c = 0; c < channels; c++) {
-            ((uint8_t* )*x_mono)[i] += (((uint8_t* )x)[channels * i + c]/channels);
-        }
-    }
-}
-
-void mix2mono_int8(size_t size, int channels, void* restrict x, void** restrict x_mono)
-{
-    *x_mono = calloc(size, sizeof(int8_t));
-    for (uint64_t i = 0; i < size; i++) {
-        for (uint16_t c = 0; c < channels; c++) {
-            ((int8_t* )*x_mono)[i] += (((int8_t* )x)[channels * i + c]/channels);
-        }
-    }
-}
-
-void mix2mono_short(size_t size, int channels, void* restrict x, void** restrict x_mono)
-{
-    *x_mono = calloc(size, sizeof(int16_t));
-    for (uint64_t i = 0; i < size; i++) {
-        for (uint16_t c = 0; c < channels; c++) {
-            ((int16_t* )*x_mono)[i] += (((int16_t* )x)[channels * i + c]/channels);
-        }
-    }
-}
-
-void mix2mono_int(size_t size, int channels, void* restrict x, void** restrict x_mono)
-{
-    *x_mono = calloc(size, sizeof(int32_t));
-    for (uint64_t i = 0; i < size; i++) {
-        for (uint16_t c = 0; c < channels; c++) {
-            ((int32_t* )*x_mono)[i] += (((int32_t* )x)[channels * i + c]/channels);
-        }
-    }
-}
-
-void mix2mono_float(size_t size, int channels, void* restrict x, void** restrict x_mono)
-{
-    *x_mono = calloc(size, sizeof(float));
-    for (uint64_t i = 0; i < size; i++) {
-        for (uint16_t c = 0; c < channels; c++) {
-            ((float* )*x_mono)[i] += (((float* )x)[channels * i + c]/channels);
-        }
-    }
-}
-
-void mix2mono_double(size_t size, int channels, void* restrict x, void** restrict x_mono)
-{
-    *x_mono = calloc(size, sizeof(double));
-    for (uint64_t i = 0; i < size; i++) {
-        for (uint16_t c = 0; c < channels; c++) {
-            ((double* )*x_mono)[i] += (((double* )x)[channels * i + c]/channels);
-        }
-    }
 }
 
 int select_output_format(adx_config_t* restrict adx_conf, char* restrict strval)

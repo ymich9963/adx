@@ -83,7 +83,7 @@ void test_get_options() {
     TEST_ASSERT_EQUAL_INT(1, get_options(argc, argv, &adx_conf));
     reset(argv, &adx_conf, argc);
 
-    char cmd4[] = "first test.wav --input test.wav --output otest.wav --info --mono --encoding raw --precision 5 --output-format csv";
+    char cmd4[] = "first test.wav --input test.wav --output otest.wav --info --encoding raw --precision 5 --output-format csv";
     split(cmd4, argv, &argc);
     TEST_ASSERT_EQUAL_INT(0, get_options(argc, argv, &adx_conf));
     reset(argv, &adx_conf, argc);
@@ -257,8 +257,7 @@ void test_generate_file_name() {
 
 void test_proc() {
     int x[] = {2,2,2,2};
-    void* x_proc1;
-    void* x_proc2;
+    void* x_proc;
     SF_INFO sf_info;
 
     adx_config_t adx_conf = {
@@ -266,14 +265,9 @@ void test_proc() {
         .data_size = sizeof(int)
     };
 
-    proc_cpy(&adx_conf, &sf_info, x, &x_proc1);
+    proc_cpy(&adx_conf, &sf_info, x, &x_proc);
 
-    TEST_ASSERT_EQUAL_INT_ARRAY(x, x_proc1, 4);
-
-    adx_conf.mix2mono = &mix2mono_int;
-    sf_info.channels = 2;
-    proc_mono(&adx_conf, &sf_info, x, &x_proc2);
-    TEST_ASSERT_EQUAL_INT_ARRAY(x, x_proc2, 2);
+    TEST_ASSERT_EQUAL_INT_ARRAY(x, x_proc, 4);
 }
 
 void test_select_output_format() {
@@ -302,70 +296,7 @@ void test_printf() {
     TEST_ASSERT_EQUAL_INT(1, x[0]);
 }
 
-void test_mix2mono() {
-    // uint8
-    uint8_t x_uint8[] = {2,2,2,2,2,2,2,2};
-    void* x_mono_uint8;
-    mix2mono_uint8(8, 2, x_uint8, &x_mono_uint8);
-    uint8_t result_uint8[] = {2,2,2,2};
-    for (int i = 0; i < 4; i++) {
-        TEST_ASSERT_EQUAL_UINT8(result_uint8[i], ((uint8_t*)x_mono_uint8)[i]);
-    }
-    TEST_ASSERT_NOT_EQUAL_UINT8(1, ((uint8_t*)x_mono_uint8)[5]);
-
-    // int8
-    int8_t x_int8[] = {2,2,2,2,2,2,2,2};
-    void* x_mono_int8;
-    mix2mono_int8(8, 2, x_int8, &x_mono_int8);
-    int8_t result_int8[] = {2,2,2,2};
-    for (int i = 0; i < 4; i++) {
-        TEST_ASSERT_EQUAL_INT8(result_int8[i], ((int8_t*)x_mono_int8)[i]);
-    }
-    TEST_ASSERT_NOT_EQUAL_INT8(1, ((int8_t*)x_mono_int8)[5]);
-
-    // short/int16
-    int16_t x_int16[] = {2,2,2,2,2,2,2,2};
-    void* x_mono_int16;
-    mix2mono_short(8, 2, x_int16, &x_mono_int16);
-    int16_t result_int16[] = {2,2,2,2};
-    for (int i = 0; i < 4; i++) {
-        TEST_ASSERT_EQUAL_INT16(result_int16[i], ((int16_t*)x_mono_int16)[i]);
-    }
-    TEST_ASSERT_NOT_EQUAL_INT16(1, ((int16_t*)x_mono_int16)[5]);
-
-    // int/int32
-    int32_t x_int32[] = {2,2,2,2,2,2,2,2};
-    void* x_mono_int32;
-    mix2mono_int(8, 2, x_int32, &x_mono_int32);
-    int result_int32[] = {2,2,2,2};
-    for (int i = 0; i < 4; i++) {
-        TEST_ASSERT_EQUAL_INT(result_int32[i], ((int32_t*)x_mono_int32)[i]);
-    }
-    TEST_ASSERT_NOT_EQUAL_INT(1, ((int32_t*)x_mono_int32)[5]);
-
-    // float
-    float x_float[] = {1,1,1,1,1,1,1,1};
-    void* x_mono_float;
-    mix2mono_float(8, 2, x_float, &x_mono_float);
-    float result_float[] = {1,1,1,1};
-    for (int i = 0; i < 4; i++) {
-        TEST_ASSERT_EQUAL_FLOAT(result_float[i], ((float*)x_mono_float)[i]);
-    }
-    TEST_ASSERT_NOT_EQUAL_FLOAT(1, ((float*)x_mono_float)[5]);
-
-    // double
-    double x_double[] = {1,1,1,1,1,1,1,1};
-    void* x_mono_double;
-    mix2mono_double(8, 2, x_double, &x_mono_double);
-    double result_double[] = {1,1,1,1};
-    for (int i = 0; i < 4; i++) {
-        TEST_ASSERT_EQUAL_FLOAT(result_double[i], ((double*)x_mono_double)[i]);
-    }
-    TEST_ASSERT_NOT_EQUAL_FLOAT(1, ((double*)x_mono_double)[5]);
-}
-
 void test_write_file() {
-    SNDFILE *sndfile;
     double x[] = {1,1,1,1};
     adx_config_t adx_conf = {
         .print = &printf_int,
@@ -405,7 +336,6 @@ int main() {
     RUN_TEST(test_proc);
     RUN_TEST(test_select_output_format);
     RUN_TEST(test_printf);
-    RUN_TEST(test_mix2mono);
     RUN_TEST(test_write_file);
     return UNITY_END();
 }

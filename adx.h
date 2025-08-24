@@ -9,7 +9,7 @@
 #define MIN_STR 255
 #define MAX_STR 22 + MIN_STR
 #define WELCOME_STR "Audio Data Extractor (ADX) by Yiannis Michael (ymich9963), 2025. \n\n Basic usage, `adx <Audio File>`. Use the `--help` option for details on the few options in the tool, and '--version' for version information.\n\n"
-#define VERSION_STR "\nadx v0.1.0, by Yiannis Michael (ymich9963), 2025.\n\n"
+#define VERSION_STR "\nadx v0.2.0, by Yiannis Michael (ymich9963), 2025.\n\n"
 #define SND_MAJOR_FORMAT_NUM 27
 #define SND_SUBTYPE_NUM 36
 
@@ -55,7 +55,6 @@ typedef struct ADX_Config {
     void (*set_adx)(adx_config_t* adx_conf, SF_INFO* sf_info);
     int (*read)(adx_config_t* adx_conf, SNDFILE* sndfile, SF_INFO* sf_info, void** x);
     void (*proc)(adx_config_t* adx_conf, SF_INFO* sf_info, void* x, void** x_proc);
-    void (*mix2mono)(size_t size, int channels, void* x, void** x_mono);
     void (*print)(FILE *ofile, char format_specifier[9], void* x, size_t index);
     int (*write)(adx_config_t* adx_conf, void* x_proc);
 } adx_config_t;
@@ -241,16 +240,6 @@ int read_file_data_double(adx_config_t* adx_conf, SNDFILE* sndfile, SF_INFO* sf_
 void set_precision_format(char format[9], uint8_t precision);
 
 /**
- * @brief Process function to process the data to mono.
- *
- * @param adx_conf ADX config struct.
- * @param sf_info SF_INFO type from libsndfile.
- * @param x Pointer to data buffer.
- * @param x_proc Processed data buffer.
- */
-void proc_mono(adx_config_t* adx_conf, SF_INFO* sf_info, void* x, void** x_proc);
-
-/**
  * @brief Process function to just preserve the data as it is at the input. Copies the data to the new buffer.
  *
  * @param adx_conf ADX config struct.
@@ -259,66 +248,6 @@ void proc_mono(adx_config_t* adx_conf, SF_INFO* sf_info, void* x, void** x_proc)
  * @param x_proc Processed data buffer.
  */
 void proc_cpy(adx_config_t* adx_conf, SF_INFO* sf_info, void* x, void** x_proc);
-
-/**
- * @brief Mix to mono function for unsigned 8-bit integer type data.
- *
- * @param size Size of data.
- * @param channels Number of channels in the input audio file.
- * @param x Input data buffer.
- * @param x_mono Output data buffer.
- */
-void mix2mono_uint8(size_t size, int channels, void* x, void** x_mono);
-
-/**
- * @brief Mix to mono function for signed 8-bit integer type data.
- *
- * @param size Size of data.
- * @param channels Number of channels in the input audio file.
- * @param x Input data buffer.
- * @param x_mono Output data buffer.
- */
-void mix2mono_int8(size_t size, int channels, void* x, void** x_mono);
-
-/**
- * @brief Mix to mono function for signed 16-bit integer type data.
- *
- * @param size Size of data.
- * @param channels Number of channels in the input audio file.
- * @param x Input data buffer.
- * @param x_mono Output data buffer.
- */
-void mix2mono_short(size_t size, int channels, void* x, void** x_mono);
-
-/**
- * @brief Mix to mono function for signed 32-bit integer type data.
- *
- * @param size Size of data.
- * @param channels Number of channels in the input audio file.
- * @param x Input data buffer.
- * @param x_mono Output data buffer.
- */
-void mix2mono_int(size_t size, int channels, void* x, void** x_mono);
-
-/**
- * @brief Mix to mono function for float.
- *
- * @param size Size of data.
- * @param channels Number of channels in the input audio file.
- * @param x Input data buffer.
- * @param x_mono Output data buffer.
- */
-void mix2mono_float(size_t size, int channels, void* x, void** x_mono);
-
-/**
- * @brief Mix to mono function for double.
- *
- * @param size Size of data.
- * @param channels Number of channels in the input audio file.
- * @param x Input data buffer.
- * @param x_mono Output data buffer.
- */
-void mix2mono_double(size_t size, int channels, void* x, void** x_mono);
 
 /**
  * @brief Get the SNDFILE major format string. Same as descriptions given in the documentation.
