@@ -55,7 +55,7 @@ $(RESULTS):: $(TEST_EXE)
 	-./$(BUILD_DIR)$< > $@ 2>&1
 	echo "Results piped..."
 
-$(TEST_EXE) :: unity.o dftt.o $(TEST_OBJ) 
+$(TEST_EXE) :: unity.o adx.o $(TEST_OBJ) 
 	cd build/; \
 		$(CC) -o $@  $(patsubst ../%, ./% ,$^) $(CFLAGS); 
 	echo "Built executable $@ with $^ in $(BUILD_DIR)"
@@ -65,7 +65,7 @@ $(TEST_OBJ):: %.o : %.c
 	mv $@ build/
 	echo "Object $@ in $(TEST_DIR) compiled to $(BUILD_DIR)."
 
-dftt.o : $(SRC_DIR)dftt.c
+adx.o : $(SRC_DIR)adx.c
 	$(CC) $< -c $(CFLAGS) 
 	mv $(patsubst ../%, ./% , $@) build/
 	echo "Object $@ in $(SRC_DIR) compiled to $(BUILD_DIR)."
@@ -86,7 +86,7 @@ $(RESULTS_DIR):
 coverage:: $(RESULTS) 
 	echo "Program executed."
 	echo
-	llvm-cov gcov dftt.c $(COVFLAGS)
+	llvm-cov gcov adx.c $(COVFLAGS)
 	mv *.gc* $(BUILD_DIR)
 	echo "Coverage files moved to $(BUILD_DIR)."
 
