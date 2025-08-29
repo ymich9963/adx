@@ -1,4 +1,4 @@
-TARGET := dftt
+TARGET := adx
 BUILD_DIR := ./build
 OBJECTS := main.o $(TARGET).o
 CFLAGS := -Wall -O3
