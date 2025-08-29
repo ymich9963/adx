@@ -6,7 +6,6 @@ To extract the data from your audio file.
 ## Features
 - Auto-detects the input file encoding and outputs that data to a text file.
 - Can specify the encoding to use for extraction which converts between short, integer, float, and double types (not available for unsigned/signed 8-bit integers).
-- Convert the audio file to a single-channel file and then extract the data from it.
 - Specify the precision of the extracted data when using decimal data types.
 
 ## Installing
